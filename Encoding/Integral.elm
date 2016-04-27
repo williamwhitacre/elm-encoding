@@ -2,6 +2,7 @@ module Encoding.Integral
   ( hexDigits
   , octDigits
   , binDigits
+  , decDigits
 
   , encodeBasePadded
   , encodeBase
@@ -9,31 +10,37 @@ module Encoding.Integral
   , encodeHexPadded
   , encodeOctPadded
   , encodeBinPadded
+  , encodeDecPadded
 
   , encodeHex
   , encodeOct
   , encodeBin
+  , encodeDec
 
   , decodeBase
 
   , decodeHex
   , decodeOct
   , decodeBin
+  , decodeDec
 
   , digitChars
   , hexChars
   , octChars
   , binChars
+  , decChars
 
   , regexSourceBase
   , regexSourceHex
   , regexSourceOct
   , regexSourceBin
+  , regexSourceDec
 
   , regexBase
   , regexHex
   , regexOct
   , regexBin
+  , regexDec
   ) where
 
 {-| Encoding and decoding facilities for integral integrals. This is mostly intended for machine
@@ -41,28 +48,28 @@ encodings, so there are no frills in place for pretty printing and the like. Thi
 Encoding.URL module.
 
 # Digits configurations.
-@docs hexDigits, octDigits, binDigits
+@docs hexDigits, octDigits, binDigits, decDigits
 
 # Arbitrary Encoding
 @docs encodeBasePadded, encodeBase
 
 # Encode With Padding
-@docs encodeHexPadded, encodeOctPadded, encodeBinPadded
+@docs encodeHexPadded, encodeOctPadded, encodeBinPadded, encodeDecPadded
 
 # Encode
-@docs encodeHex, encodeOct, encodeBin
+@docs encodeHex, encodeOct, encodeBin, encodeDec
 
 # Arbitrary Decoding
 @docs decodeBase
 
 # Decode
-@docs decodeHex, decodeOct, decodeBin
+@docs decodeHex, decodeOct, decodeBin, decodeDec
 
 # Character Groups
-@docs digitChars, hexChars, octChars, binChars
+@docs digitChars, hexChars, octChars, binChars, decChars
 
 # Regex
-@docs regexSourceBase, regexSourceHex, regexSourceOct, regexSourceBin, regexBase, regexHex, regexOct, regexBin
+@docs regexSourceBase, regexSourceHex, regexSourceOct, regexSourceBin, regexSourceDec, regexBase, regexHex, regexOct, regexBin, regexDec
 -}
 
 import Char
@@ -154,6 +161,10 @@ octDigits = ["01234567"]
 binDigits : List String
 binDigits = ["01"]
 
+{-| Digits configuration for decimal integrals. -}
+decDigits : List String
+decDigits = ["0123456789"]
+
 
 {-| Encode using a given digits configuration and minimum length padding. The remaining digits will
 be taken up by zeroes. -}
@@ -168,30 +179,38 @@ encodeBase =
   flip encodeBasePadded 0
 
 
-{-| Encode a integral with padding using a the default `hexDigits` configuration. -}
+{-| Encode a hexadecimal integral with padding using a the default `hexDigits` configuration. -}
 encodeHexPadded : Int -> number -> String
 encodeHexPadded = encodeBasePadded hexDigits
 
-{-| Encode a integral with padding using a the default `octDigits` configuration. -}
+{-| Encode an octal integral with padding using a the default `octDigits` configuration. -}
 encodeOctPadded : Int -> number -> String
 encodeOctPadded = encodeBasePadded octDigits
 
-{-| Encode a integral with padding using a the default `binDigits` configuration. -}
+{-| Encode a binary integral with padding using a the default `binDigits` configuration. -}
 encodeBinPadded : Int -> number -> String
 encodeBinPadded = encodeBasePadded binDigits
 
+{-| Encode a decimal integral with padding using a the default `decDigits` configuration. -}
+encodeDecPadded : Int -> number -> String
+encodeDecPadded = encodeBasePadded decDigits
 
-{-| Encode a integral without padding using a the default `hexDigits` configuration. -}
+
+{-| Encode a hexadecimal integral without padding using a the default `hexDigits` configuration. -}
 encodeHex : number -> String
 encodeHex = encodeBase hexDigits
 
-{-| Encode a integral without padding using a the default `octDigits` configuration. -}
+{-| Encode an octal integral without padding using a the default `octDigits` configuration. -}
 encodeOct : number -> String
 encodeOct = encodeBase octDigits
 
-{-| Encode a integral without padding using a the default `binDigits` configuration. -}
+{-| Encode a binary integral without padding using a the default `binDigits` configuration. -}
 encodeBin : number -> String
 encodeBin = encodeBase binDigits
+
+{-| Encode a decimal integral without padding using a the default `decDigits` configuration. -}
+encodeDec : number -> String
+encodeDec = encodeBase decDigits
 
 
 decodeBase_inner : String -> List String -> String -> Maybe Int
@@ -228,6 +247,10 @@ decodeOct = decodeBase octDigits
 decodeBin : String -> Maybe Int
 decodeBin = decodeBase binDigits
 
+{-| Decode a decimal encoded integral using the default `decDigits` configuration. -}
+decodeDec : String -> Maybe Int
+decodeDec = decodeBase decDigits
+
 
 {-| A list of the unique digit characters possible in an integral with the given digits configuration. -}
 digitChars : List String -> List Char
@@ -252,8 +275,12 @@ octChars = digitChars octDigits
 binChars : List Char
 binChars = digitChars binDigits
 
+{-| List of characters appearing in decimal numbers. -}
+decChars : List Char
+decChars = digitChars decDigits
 
-{-| Match an encoded integral using the given digits configuration. -}
+
+{-| Regex that matches an encoded integral using the given digits configuration. -}
 regexSourceBase : List String -> String
 regexSourceBase digits =
   String.join ""
@@ -264,17 +291,21 @@ regexSourceBase digits =
     ]
 
 
-{-| Match an encoded hexadecimal integral. -}
+{-| MRegex that matches an encoded hexadecimal integral. -}
 regexSourceHex : String
 regexSourceHex = regexSourceBase hexDigits
 
-{-| Match an encoded octal integral. -}
+{-| MRegex that matches an encoded octal integral. -}
 regexSourceOct : String
 regexSourceOct = regexSourceBase octDigits
 
-{-| Match an encoded binary integral. -}
+{-| MRegex that matches an encoded binary integral. -}
 regexSourceBin : String
 regexSourceBin = regexSourceBase binDigits
+
+{-| MRegex that matches an encoded decimal integral. -}
+regexSourceDec : String
+regexSourceDec = regexSourceBase decDigits
 
 
 
@@ -294,3 +325,7 @@ regexOct = regexBase octDigits
 {-| Match an encoded binary integral. -}
 regexBin : Regex
 regexBin = regexBase binDigits
+
+{-| Match an encoded decimal integral. -}
+regexDec : Regex
+regexDec = regexBase decDigits
